@@ -6,10 +6,37 @@ import sys
 
 INPUT_LINE_RE = re.compile(r'(?P<coin>\w+):(?P<x>\d+),(?P<y>\d+)')
 
+def read_input(file_name):
+    game_board = {}
+    with open(file_name,'r') as in_file:
+        size = int(in_file.readline())
+        for line in in_file:
+            mat = INPUT_LINE_RE.match(line)
+            if mat:
+                values = mat.groupdict()
+                game_board.setdefault(values['coin'], []).append(
+                    (int(values['x']),int(values['y'])))
+            else:
+                assert False, "error in input line %s" % line
+        return GameBoard(size, game_board)
+
+def get_possible_directions(locdict, size, start, end):
+    possible_iters = range(-1,2)
+    for r in possible_iters:
+        for c in possible_iters:
+            # n -> next
+            n_r, n_c = start[0]+r, start[1]+c
+            if abs(r+c)==1 and (size > n_r >= 0) and (size > n_c >= 0):
+                n_coin = locdict.get((n_r, n_c), None)
+                if (not n_coin):
+                    yield n_r, n_c, False
+                elif n_r == end[0] and n_c == end[1]:
+                    yield n_r, n_c, True
+
 class GameBoard(object):
 
-    def __init__(self, no_of_rows, game_board):
-        self.no_of_rows = no_of_rows
+    def __init__(self, size, game_board):
+        self.size = size
         self.game_board = game_board
 
     def convert2locdict(self):
@@ -21,7 +48,7 @@ class GameBoard(object):
 
     def display(self):
         if not hasattr(self, 'locdict'): self.convert2locdict()
-        rage_of_rc = range(self.no_of_rows)
+        rage_of_rc = range(self.size)
         def draw_line():
             sys.stdout.write('+')
             for column in rage_of_rc: sys.stdout.write('--+')
@@ -35,27 +62,14 @@ class GameBoard(object):
             print
             draw_line()
 
+
     def solve(self):
         self.display()
-        for coin in self.game_board.keys():
-            pass
-            # get_paths(coin, no_of_rows, game_board, locdict)
-
-
-def read_input(file_name):
-    game_board = {}
-    with open(file_name,'r') as in_file:
-        no_of_rows = int(in_file.readline())
-        for line in in_file:
-            mat = INPUT_LINE_RE.match(line)
-            if mat:
-                values = mat.groupdict()
-                game_board.setdefault(values['coin'], []).append(
-                    (int(values['x']),int(values['y'])))
-            else:
-                assert False, "error in input line %s" % line
-        return GameBoard(no_of_rows, game_board)
-
+        for coin, locs in self.game_board.items():
+            for dir_r,dir_c,end  in get_possible_directions(
+                    self.locdict, self.size, *locs):
+                print dir_r,dir_c,end
+                self.locdict[(dir_r, dir_c)] = coin
 
 def main():
     parser = argparse.ArgumentParser(description='Solve pipes problem.')
@@ -65,6 +79,7 @@ def main():
     for file_id in arg.file_ids:
         game_board = read_input("input/input%s.txt" % file_id)
         output = game_board.solve()
+        game_board.display()
         # display(output)
 
 if __name__ == '__main__':
