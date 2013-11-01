@@ -6,27 +6,41 @@ import sys
 
 INPUT_LINE_RE = re.compile(r'(?P<coin>\w+):(?P<x>\d+),(?P<y>\d+)')
 
-def convert2locdict(game_board):
-    locdict = {}
-    for k, v in game_board.items():
-        for new_k in v:
-            locdict[new_k] = k
-    return locdict
+class GameBoard(object):
 
-def display(no_of_rows, game_board):
-    locdict = convert2locdict(game_board)
-    rage_of_rc = range(no_of_rows)
-    def draw_line():
-        sys.stdout.write('+')
-        for column in rage_of_rc: sys.stdout.write('--+')
-        print
-    draw_line()
-    for row in rage_of_rc:
-        sys.stdout.write('|')
-        for column in rage_of_rc:
-            sys.stdout.write(' %s|' % locdict.get((row, column),' '))
-        print
+    def __init__(self, no_of_rows, game_board):
+        self.no_of_rows = no_of_rows
+        self.game_board = game_board
+
+    def convert2locdict(self):
+        self.locdict = {}
+        for k, v in self.game_board.items():
+            for new_k in v:
+                self.locdict[new_k] = k
+        return self.locdict
+
+    def display(self):
+        if not hasattr(self, 'locdict'): self.convert2locdict()
+        rage_of_rc = range(self.no_of_rows)
+        def draw_line():
+            sys.stdout.write('+')
+            for column in rage_of_rc: sys.stdout.write('--+')
+            print
         draw_line()
+        for row in rage_of_rc:
+            sys.stdout.write('|')
+            for column in rage_of_rc:
+                sys.stdout.write(' %s|' % self.locdict.get(
+                    (row, column),' '))
+            print
+            draw_line()
+
+    def solve(self):
+        self.display()
+        for coin in self.game_board.keys():
+            pass
+            # get_paths(coin, no_of_rows, game_board, locdict)
+
 
 def read_input(file_name):
     game_board = {}
@@ -40,7 +54,8 @@ def read_input(file_name):
                     (int(values['x']),int(values['y'])))
             else:
                 assert False, "error in input line %s" % line
-        return no_of_rows, game_board
+        return GameBoard(no_of_rows, game_board)
+
 
 def main():
     parser = argparse.ArgumentParser(description='Solve pipes problem.')
@@ -48,9 +63,8 @@ def main():
                         help='file ids, this will be used as input<id>.txt')
     arg = parser.parse_args()
     for file_id in arg.file_ids:
-        no_of_rows, game_board = read_input("input/input%s.txt" % file_id)
-        display(no_of_rows, game_board)
-        # output = solve(input)
+        game_board = read_input("input/input%s.txt" % file_id)
+        output = game_board.solve()
         # display(output)
 
 if __name__ == '__main__':
