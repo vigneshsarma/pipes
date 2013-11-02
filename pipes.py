@@ -34,6 +34,19 @@ def get_paths(coin, locdict, size, path, end):
                 yield new_path
         path.pop()
 
+def remove_obviously_wrong(paths, size_sq):
+    print {k:len(v) for k,v in paths.items()}
+    print "size_sq:", size_sq
+    min_path_lens = {k:min([len(path) for path in v]) for k,v in paths.items()}
+
+    max_path_lens = {coin:(size_sq-sum([v for k,v in min_path_lens.items()\
+                                        if k != coin])
+                       ) for coin in paths.keys()}
+    new_paths = {coin:[path for path in paths[coin] if len(path)<=max_len] \
+                 for coin,max_len in max_path_lens.items()}
+    print {k:len(v) for k,v in new_paths.items()}
+    return new_paths
+
 def solve(size, start_game_board):
     start_locdict = convert2locdict(start_game_board)
     size_sq = size ** 2
@@ -43,16 +56,16 @@ def solve(size, start_game_board):
         paths[coin] = []
         for path in get_paths(coin, start_locdict.copy(),
                               size, [locs[0]], locs[-1]):
-            # print path
             paths[coin].append(path)
-        # print self.paths
+    paths = remove_obviously_wrong(paths, size_sq)
+    combo_len=len(paths.keys())
     locdict = None
+    count=0
     for combo in product(*paths.values()):
-        total_length = 0
-        for path in combo:
-            total_length+=len(path)
-            if total_length > size_sq:
-                break
+        total_length = sum([len(path) for path in combo])
+        count+=1
+        if count%100000==0:
+            print "checked %d combos, tl: %d" % (count, total_length)
         if total_length == size_sq:
             possible_gb = convert2gameboard(start_locdict, combo)
 
@@ -61,6 +74,9 @@ def solve(size, start_game_board):
             if locdict:
                 print "possible combo", combo
                 break
+        else:
+            continue
+    print "total %d combos checked" % count
     if locdict:
         display(locdict, size)
     else:
