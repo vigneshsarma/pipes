@@ -3,6 +3,7 @@
 import argparse
 import re
 import sys
+from itertools import product
 
 INPUT_LINE_RE = re.compile(r'(?P<coin>\w+):(?P<x>\d+),(?P<y>\d+)')
 
@@ -69,27 +70,52 @@ class GameBoard(object):
 
     def __init__(self, size, game_board):
         self.size = size
-        self.game_board = game_board
+        self.size_sq = size ** 2
+        self.start_game_board = game_board
 
-    def convert2locdict(self):
-        self.locdict = {}
-        for k, v in self.game_board.items():
+    def convert2locdict(self, game_board=None,):
+        locdict = {}
+        if not game_board:
+            game_board = self.start_game_board
+        for k, v in game_board.items():
             for new_k in v:
-                self.locdict[new_k] = k
-        return self.locdict
+                if new_k in locdict:
+                    raise Exception('Overlapping paths')
+                locdict[new_k] = k
+        return locdict
+
+    def convert2gameboard(self, paths):
+        return {self.start_locdict[path[0]]:path for path in paths}
 
     def solve(self):
-        self.convert2locdict()
-        display(self.locdict, self.size)
+        self.start_locdict = self.convert2locdict()
+        display(self.start_locdict, self.size)
         self.paths = {}
-        for coin, locs in self.game_board.items():
+        for coin, locs in self.start_game_board.items():
             self.paths[coin] = []
-            for path in get_paths(coin, self.locdict.copy(),
+            for path in get_paths(coin, self.start_locdict.copy(),
                                    self.size, [locs[0]], locs[-1]):
                 # print path
                 self.paths[coin].append(path)
-        print self.paths
-        display(self.locdict, self.size)
+        # print self.paths
+        locdict = None
+        for combo in product(*self.paths.values()):
+            total_length = 0
+            for path in combo:
+                total_length+=len(path)
+                if total_length > self.size_sq:
+                    break
+            if total_length == self.size_sq:
+                possible_gb = self.convert2gameboard(combo)
+                try:
+                    locdict = self.convert2locdict(possible_gb)
+                except Exception as e:
+                    pass
+                else:
+                    print "possible combo", combo
+                    break
+        if locdict:
+            display(locdict, self.size)
 
 def main():
     parser = argparse.ArgumentParser(description='Solve pipes problem.')
