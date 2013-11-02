@@ -2,7 +2,7 @@
 
 import argparse
 from itertools import product
-from util import read_input, display
+from util import read_input, display, convert2locdict
 
 possible_iters = (-1,0,1)
 possible_moves = [ (r, c) for r in possible_iters \
@@ -41,24 +41,11 @@ class GameBoard(object):
         self.size_sq = size ** 2
         self.start_game_board = game_board
 
-    def convert2locdict(self, game_board=None, raise_error=True):
-        locdict = {}
-        if not game_board:
-            game_board = self.start_game_board
-        for k, v in game_board.items():
-            for new_k in v:
-                if new_k in locdict:
-                    if raise_error:
-                        raise KeyError('Overlapping paths')
-                    return None
-                locdict[new_k] = k
-        return locdict
-
     def convert2gameboard(self, paths):
         return {self.start_locdict[path[0]]:path for path in paths}
 
     def solve(self):
-        self.start_locdict = self.convert2locdict()
+        self.start_locdict = convert2locdict(self.start_game_board)
         display(self.start_locdict, self.size)
         self.paths = {}
         for coin, locs in self.start_game_board.items():
@@ -78,7 +65,7 @@ class GameBoard(object):
             if total_length == self.size_sq:
                 possible_gb = self.convert2gameboard(combo)
 
-                locdict = self.convert2locdict(possible_gb,
+                locdict = convert2locdict(possible_gb,
                                                raise_error=False)
                 if locdict:
                     print "possible combo", combo

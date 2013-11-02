@@ -32,3 +32,14 @@ def display(locdict, size):
                 (row, column),' '))
         print
         draw_line()
+
+def convert2locdict(game_board, raise_error=True):
+        locdict = {}
+        for k, v in game_board.items():
+            for new_k in v:
+                if new_k in locdict:
+                    if raise_error:
+                        raise KeyError('Overlapping paths')
+                    return None
+                locdict[new_k] = k
+        return locdict
