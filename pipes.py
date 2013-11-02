@@ -38,11 +38,11 @@ def get_directions(locdict, size, start, end):
 
 
 def get_paths(coin, locdict, size, path, end):
-    for dir_r,dir_c,did_end  in get_possible_directions(
+    for dir_r,dir_c,did_end  in get_directions(
             locdict, size, path[-1], end):
-        print dir_r,dir_c,did_end
         path.append((dir_r, dir_c))
         if did_end:
+            # display(locdict, size)
             yield path
         else:
             new_locdict = locdict.copy()
