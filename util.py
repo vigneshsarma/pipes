@@ -43,3 +43,6 @@ def convert2locdict(game_board, raise_error=True):
                     return None
                 locdict[new_k] = k
         return locdict
+
+def convert2gameboard(locdict, paths):
+    return {locdict[path[0]]:path for path in paths}
