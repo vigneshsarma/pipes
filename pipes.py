@@ -2,7 +2,7 @@
 
 import argparse
 from itertools import product
-from util import read_input, display, convert2locdict
+from util import read_input, display, convert2locdict, convert2gameboard
 
 possible_iters = (-1,0,1)
 possible_moves = [ (r, c) for r in possible_iters \
@@ -34,46 +34,37 @@ def get_paths(coin, locdict, size, path, end):
                 yield new_path
         path.pop()
 
-class GameBoard(object):
-
-    def __init__(self, size, game_board):
-        self.size = size
-        self.size_sq = size ** 2
-        self.start_game_board = game_board
-
-    def convert2gameboard(self, paths):
-        return {self.start_locdict[path[0]]:path for path in paths}
-
-    def solve(self):
-        self.start_locdict = convert2locdict(self.start_game_board)
-        display(self.start_locdict, self.size)
-        self.paths = {}
-        for coin, locs in self.start_game_board.items():
-            self.paths[coin] = []
-            for path in get_paths(coin, self.start_locdict.copy(),
-                                   self.size, [locs[0]], locs[-1]):
-                # print path
-                self.paths[coin].append(path)
+def solve(size, start_game_board):
+    start_locdict = convert2locdict(start_game_board)
+    size_sq = size ** 2
+    display(start_locdict, size)
+    paths = {}
+    for coin, locs in start_game_board.items():
+        paths[coin] = []
+        for path in get_paths(coin, start_locdict.copy(),
+                              size, [locs[0]], locs[-1]):
+            # print path
+            paths[coin].append(path)
         # print self.paths
-        locdict = None
-        for combo in product(*self.paths.values()):
-            total_length = 0
-            for path in combo:
-                total_length+=len(path)
-                if total_length > self.size_sq:
-                    break
-            if total_length == self.size_sq:
-                possible_gb = self.convert2gameboard(combo)
+    locdict = None
+    for combo in product(*paths.values()):
+        total_length = 0
+        for path in combo:
+            total_length+=len(path)
+            if total_length > size_sq:
+                break
+        if total_length == size_sq:
+            possible_gb = convert2gameboard(start_locdict, combo)
 
-                locdict = convert2locdict(possible_gb,
-                                               raise_error=False)
-                if locdict:
-                    print "possible combo", combo
-                    break
-        if locdict:
-            display(locdict, self.size)
-        else:
-            print "can't find solution."
+            locdict = convert2locdict(possible_gb,
+                                      raise_error=False)
+            if locdict:
+                print "possible combo", combo
+                break
+    if locdict:
+        display(locdict, size)
+    else:
+        print "can't find solution."
 
 def main():
     parser = argparse.ArgumentParser(description='Solve pipes problem.')
@@ -81,9 +72,7 @@ def main():
                         help='file ids, this will be used as input<id>.txt')
     arg = parser.parse_args()
     for file_id in arg.file_ids:
-        game_board = GameBoard(*read_input("input/input%s.txt" % file_id))
-        output = game_board.solve()
-        # display(output)
+        solve(*read_input("input/input%s.txt" % file_id))
 
 if __name__ == '__main__':
     main()
