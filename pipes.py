@@ -24,6 +24,20 @@ def read_input(file_name):
                 assert False, "error in input line %s" % line
         return GameBoard(size, game_board)
 
+def display(locdict, size):
+    rage_of_rc = range(size)
+    def draw_line():
+        sys.stdout.write('+')
+        for column in rage_of_rc: sys.stdout.write('--+')
+        print
+    draw_line()
+    for row in rage_of_rc:
+        sys.stdout.write('|')
+        for column in rage_of_rc:
+            sys.stdout.write(' %s|' % locdict.get(
+                (row, column),' '))
+        print
+        draw_line()
 
 def get_directions(locdict, size, start, end):
     for r, c in possible_moves:
@@ -51,8 +65,6 @@ def get_paths(coin, locdict, size, path, end):
                 yield new_path
         path.pop()
 
-
-
 class GameBoard(object):
 
     def __init__(self, size, game_board):
@@ -66,30 +78,15 @@ class GameBoard(object):
                 self.locdict[new_k] = k
         return self.locdict
 
-    def display(self):
-        if not hasattr(self, 'locdict'): self.convert2locdict()
-        rage_of_rc = range(self.size)
-        def draw_line():
-            sys.stdout.write('+')
-            for column in rage_of_rc: sys.stdout.write('--+')
-            print
-        draw_line()
-        for row in rage_of_rc:
-            sys.stdout.write('|')
-            for column in rage_of_rc:
-                sys.stdout.write(' %s|' % self.locdict.get(
-                    (row, column),' '))
-            print
-            draw_line()
-
-
     def solve(self):
-        self.display()
+        self.convert2locdict()
+        display(self.locdict, self.size)
         for coin, locs in self.game_board.items():
             print coin
             for path  in get_paths(coin, self.locdict.copy(),
                                    self.size, [locs[0]], locs[-1]):
                 print path
+        display(self.locdict, self.size)
 
 def main():
     parser = argparse.ArgumentParser(description='Solve pipes problem.')
@@ -99,7 +96,6 @@ def main():
     for file_id in arg.file_ids:
         game_board = read_input("input/input%s.txt" % file_id)
         output = game_board.solve()
-        game_board.display()
         # display(output)
 
 if __name__ == '__main__':
