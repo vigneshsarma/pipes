@@ -36,6 +36,23 @@ def get_directions(locdict, size, start, end):
             elif n_r == end[0] and n_c == end[1]:
                 yield n_r, n_c, True
 
+
+def get_paths(coin, locdict, size, path, end):
+    for dir_r,dir_c,did_end  in get_possible_directions(
+            locdict, size, path[-1], end):
+        print dir_r,dir_c,did_end
+        path.append((dir_r, dir_c))
+        if did_end:
+            yield path
+        else:
+            new_locdict = locdict.copy()
+            new_locdict[(dir_r, dir_c)] = coin
+            for new_path in get_paths(coin, new_locdict, size, path, end):
+                yield new_path
+        path.pop()
+
+
+
 class GameBoard(object):
 
     def __init__(self, size, game_board):
@@ -69,10 +86,10 @@ class GameBoard(object):
     def solve(self):
         self.display()
         for coin, locs in self.game_board.items():
-            for dir_r,dir_c,end  in get_possible_directions(
-                    self.locdict, self.size, *locs):
-                print dir_r,dir_c,end
-                self.locdict[(dir_r, dir_c)] = coin
+            print coin
+            for path  in get_paths(coin, self.locdict.copy(),
+                                   self.size, [locs[0]], locs[-1]):
+                print path
 
 def main():
     parser = argparse.ArgumentParser(description='Solve pipes problem.')
