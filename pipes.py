@@ -57,7 +57,7 @@ def get_paths(coin, locdict, size, path, end):
         path.append((dir_r, dir_c))
         if did_end:
             # display(locdict, size)
-            yield path
+            yield path[:]
         else:
             new_locdict = locdict.copy()
             new_locdict[(dir_r, dir_c)] = coin
