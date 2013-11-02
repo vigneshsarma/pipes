@@ -81,11 +81,14 @@ class GameBoard(object):
     def solve(self):
         self.convert2locdict()
         display(self.locdict, self.size)
+        self.paths = {}
         for coin, locs in self.game_board.items():
-            print coin
-            for path  in get_paths(coin, self.locdict.copy(),
+            self.paths[coin] = []
+            for path in get_paths(coin, self.locdict.copy(),
                                    self.size, [locs[0]], locs[-1]):
-                print path
+                # print path
+                self.paths[coin].append(path)
+        print self.paths
         display(self.locdict, self.size)
 
 def main():
