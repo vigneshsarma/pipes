@@ -1,44 +1,12 @@
 #!/usr/bin/env python
 
 import argparse
-import re
-import sys
 from itertools import product
-
-INPUT_LINE_RE = re.compile(r'(?P<coin>\w+):(?P<x>\d+),(?P<y>\d+)')
+from util import read_input, display
 
 possible_iters = (-1,0,1)
 possible_moves = [ (r, c) for r in possible_iters \
                    for c in possible_iters if abs(r+c)==1 ]
-
-def read_input(file_name):
-    game_board = {}
-    with open(file_name,'r') as in_file:
-        size = int(in_file.readline())
-        for line in in_file:
-            mat = INPUT_LINE_RE.match(line)
-            if mat:
-                values = mat.groupdict()
-                game_board.setdefault(values['coin'], []).append(
-                    (int(values['x']),int(values['y'])))
-            else:
-                assert False, "error in input line %s" % line
-        return GameBoard(size, game_board)
-
-def display(locdict, size):
-    rage_of_rc = range(size)
-    def draw_line():
-        sys.stdout.write('+')
-        for column in rage_of_rc: sys.stdout.write('--+')
-        print
-    draw_line()
-    for row in rage_of_rc:
-        sys.stdout.write('|')
-        for column in rage_of_rc:
-            sys.stdout.write(' %s|' % locdict.get(
-                (row, column),' '))
-        print
-        draw_line()
 
 def get_directions(locdict, size, start, end):
     for r, c in possible_moves:
@@ -126,7 +94,7 @@ def main():
                         help='file ids, this will be used as input<id>.txt')
     arg = parser.parse_args()
     for file_id in arg.file_ids:
-        game_board = read_input("input/input%s.txt" % file_id)
+        game_board = GameBoard(*read_input("input/input%s.txt" % file_id))
         output = game_board.solve()
         # display(output)
 
