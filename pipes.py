@@ -6,6 +6,10 @@ import sys
 
 INPUT_LINE_RE = re.compile(r'(?P<coin>\w+):(?P<x>\d+),(?P<y>\d+)')
 
+possible_iters = (-1,0,1)
+possible_moves = [ (r, c) for r in possible_iters \
+                   for c in possible_iters if abs(r+c)==1 ]
+
 def read_input(file_name):
     game_board = {}
     with open(file_name,'r') as in_file:
@@ -21,17 +25,15 @@ def read_input(file_name):
         return GameBoard(size, game_board)
 
 def get_possible_directions(locdict, size, start, end):
-    possible_iters = range(-1,2)
-    for r in possible_iters:
-        for c in possible_iters:
-            # n -> next
-            n_r, n_c = start[0]+r, start[1]+c
-            if abs(r+c)==1 and (size > n_r >= 0) and (size > n_c >= 0):
-                n_coin = locdict.get((n_r, n_c), None)
-                if (not n_coin):
-                    yield n_r, n_c, False
-                elif n_r == end[0] and n_c == end[1]:
-                    yield n_r, n_c, True
+    for r, c in possible_moves:
+        # n -> next
+        n_r, n_c = start[0]+r, start[1]+c
+        if (size > n_r >= 0) and (size > n_c >= 0):
+            n_coin = locdict.get((n_r, n_c), None)
+            if (not n_coin):
+                yield n_r, n_c, False
+            elif n_r == end[0] and n_c == end[1]:
+                yield n_r, n_c, True
 
 class GameBoard(object):
 
