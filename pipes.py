@@ -73,14 +73,16 @@ class GameBoard(object):
         self.size_sq = size ** 2
         self.start_game_board = game_board
 
-    def convert2locdict(self, game_board=None,):
+    def convert2locdict(self, game_board=None, raise_error=True):
         locdict = {}
         if not game_board:
             game_board = self.start_game_board
         for k, v in game_board.items():
             for new_k in v:
                 if new_k in locdict:
-                    raise Exception('Overlapping paths')
+                    if raise_error:
+                        raise KeyError('Overlapping paths')
+                    return None
                 locdict[new_k] = k
         return locdict
 
@@ -107,15 +109,16 @@ class GameBoard(object):
                     break
             if total_length == self.size_sq:
                 possible_gb = self.convert2gameboard(combo)
-                try:
-                    locdict = self.convert2locdict(possible_gb)
-                except Exception as e:
-                    pass
-                else:
+
+                locdict = self.convert2locdict(possible_gb,
+                                               raise_error=False)
+                if locdict:
                     print "possible combo", combo
                     break
         if locdict:
             display(locdict, self.size)
+        else:
+            print "can't find solution."
 
 def main():
     parser = argparse.ArgumentParser(description='Solve pipes problem.')
