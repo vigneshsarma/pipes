@@ -24,7 +24,8 @@ def read_input(file_name):
                 assert False, "error in input line %s" % line
         return GameBoard(size, game_board)
 
-def get_possible_directions(locdict, size, start, end):
+
+def get_directions(locdict, size, start, end):
     for r, c in possible_moves:
         # n -> next
         n_r, n_c = start[0]+r, start[1]+c
